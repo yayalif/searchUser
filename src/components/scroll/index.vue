@@ -27,15 +27,13 @@
 		</ul>
 	</div>
 </div>
-<div class="verticalWrapper" @touchmove="scrollMove" @touchend="scrollEnd">
+<div class="verticalWrapper" @touchmove="scrollMove">
 	<div class="verticalScroll">
-		<transition name='opcity-fade'>
 		<ul class="refresh">
 			<li v-if="loading === 1" class="refresh-li">下拉加载...</li>
 			<li v-if="loading === 2" class="refresh-li">松开刷新...</li>
 		</ul>
-		</transition>
-			<div :class="getItemWrapper(i)" v-for="i in 30" :key="i">
+			<div :class="getItemWrapper(index)" v-for="(item, index) in 30" :key="index" @touchmove="scrollItem">
 				<div class="opt-scroll">
 						<div class="opt-items">
 							<div class="content">
@@ -58,7 +56,7 @@
 </div>
 </template>
 <script>
-import  "./scroll";
+import  "./iscroll-probe";
 export default {
 	data() {
 		return {
@@ -69,7 +67,9 @@ export default {
 			// 是否触发更新
 			refresh: false,
 			// 是否显示下拉刷新
-			showRefresh: false
+			showRefresh: false,
+			iScrollList: []
+
 		}
 	},
 	mounted () {
@@ -88,17 +88,15 @@ export default {
 										scrollY: true,
 										preventDefault: false 
 										});
-			this.vScroll.on('scrollMove', () => {
-				console.log('g--------')
-				this.showRefresh = true
-				console.log(this.vScroll.distY, this.vScroll.directionY)
-				if (this.vScroll.distY > 30 && this.vScroll.distY < 100 && this.vScroll.directionY < 0) {
-					// 说明向下拉
-					this.loading = 1
-				} else if (this.vScroll.distY > 100 && this.vScroll.directionY < 0) {
-					// 拉到最大位置
-					this.loading = 2
-				}
+			this.vScroll.on('touchmove', () => {
+				// 不生效
+				// if (this.vScroll.distY > 30 && this.vScroll.distY < 100 && this.vScroll.directionY < 0) {
+				// 	// 说明向下拉
+				// 	this.loading = 1
+				// } else if (this.vScroll.distY > 100 && this.vScroll.directionY < 0) {
+				// 	// 拉到最大位置
+				// 	this.loading = 2
+				// }
 			})
 			this.vScroll.on('scrollEnd', () => {
 				this.showRefresh = false
@@ -109,19 +107,21 @@ export default {
 			return 'opt-wrapper' + i
 		},
 		optInit () {
-			for (let i = 1; i < 30; i++) {
-				new IScroll('.opt-wrapper'+ i, {
+			for (let i = 0; i < 30; i++) {
+				this.iScrollList[i] = new IScroll('.opt-wrapper'+ i, {
 					eventPassthrough: true, 
 					scrollX: true, 
 					scrollY: false,
+					bounce: false,
 					preventDefault: false,
 					mouseWheel: true
 				});
 			}
 		},
+		/**
+		 * 监听 verticalWrapper 滚动事件
+		 */
 		scrollMove () {
-			this.showRefresh = true
-			console.log(this.vScroll.distY, this.vScroll.directionY)
 			if (this.vScroll.distY > 30 && this.vScroll.distY < 100 && this.vScroll.directionY < 0) {
 				// 说明向下拉
 				this.loading = 1
@@ -129,18 +129,13 @@ export default {
 				// 拉到最大位置
 				this.loading = 2
 			}
+			// item 恢复原位
 		},
-		scrollEnd () {
-			// console.log(this.vScroll.distY, this.vScroll.directionY)
-			// if (this.vScroll.distY <= 0 && this.vScroll.directionY >= 0) {
-			// 	// 不触发更新
-			// 	this.refresh = false
-			// 	console.log('refresh = false')
-			// } else {
-			// 	this.refresh = true
-			// 	console.log('refresh = true')
-			// }
-		},
+		/**
+		 * 监听 verticalWrapper 滚动事件
+		 */
+		scrollItem () {
+		}
 	}
 }
 </script>>
@@ -261,7 +256,7 @@ p {
 	position: relative;
 	z-index: 1;
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
-	width: 120vw;
+	width: 140vw;
 	/* height: 80px; */
 	-webkit-transform: translateZ(0);
 	-moz-transform: translateZ(0);
@@ -314,7 +309,7 @@ p {
 }
 
 .read {
-	width: 10vw;
+	width: 20vw;
 	height: 100%;
 	background-color: rgb(199, 247, 247);
 	display: inline-block;
@@ -322,7 +317,7 @@ p {
 	line-height: 80px;
 }
 .del {
-	width: 10vw;
+	width: 20vw;
 	height: 100%;
 	background-color: #f00;
 	line-height: 80px;
